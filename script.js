@@ -73,3 +73,70 @@ document.addEventListener("DOMContentLoaded", () => {
         window.open(link, "_blank");
     });
 });
+
+
+
+/* SISTEMA DE AVALIAÇÃO */
+
+let notaSelecionada = 0;
+
+const estrelasInput = document.querySelectorAll(".estrelas-input span");
+const btnEnviar = document.getElementById("enviar-avaliacao");
+const notaElemento = document.querySelector(".nota");
+const reviewsElemento = document.querySelector(".reviews");
+const estrelasVisual = document.querySelector(".estrelas");
+
+let avaliacoes = JSON.parse(localStorage.getItem("avaliacoes")) || [];
+
+function atualizarMedia() {
+    if (avaliacoes.length === 0) return;
+
+    const soma = avaliacoes.reduce((acc, av) => acc + av.nota, 0);
+    const media = (soma / avaliacoes.length).toFixed(1);
+
+    notaElemento.textContent = media;
+    reviewsElemento.textContent = `(${avaliacoes.length} avaliações)`;
+
+    let estrelasHTML = "";
+    for (let i = 1; i <= 5; i++) {
+        estrelasHTML += i <= Math.round(media) ? "★" : "☆";
+    }
+    estrelasVisual.textContent = estrelasHTML;
+}
+
+estrelasInput.forEach(estrela => {
+    estrela.addEventListener("click", () => {
+        notaSelecionada = parseInt(estrela.dataset.star);
+
+        estrelasInput.forEach(e => {
+            e.classList.remove("ativa");
+            if (parseInt(e.dataset.star) <= notaSelecionada) {
+                e.classList.add("ativa");
+            }
+        });
+    });
+});
+
+btnEnviar.addEventListener("click", () => {
+    const comentario = document.getElementById("comentario").value;
+
+    if (notaSelecionada === 0) {
+        alert("Selecione uma nota");
+        return;
+    }
+
+    avaliacoes.push({
+        nota: notaSelecionada,
+        comentario: comentario
+    });
+
+    localStorage.setItem("avaliacoes", JSON.stringify(avaliacoes));
+
+    atualizarMedia();
+
+    document.getElementById("comentario").value = "";
+    estrelasInput.forEach(e => e.classList.remove("ativa"));
+    notaSelecionada = 0;
+});
+
+atualizarMedia();
